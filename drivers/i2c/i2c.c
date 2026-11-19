@@ -427,6 +427,42 @@ void i2c_unregister_device(struct i2c_client *client)
 	devinfo_del(&client->dev, i2c_info);
 }
 
+static void of_i2c_register_device(struct i2c_adapter *adap,
+				   struct device_node *n)
+{
+	struct i2c_board_info info = {};
+	struct i2c_client *result;
+	const __be32 *addr;
+	int len;
+
+	if (n->dev) {
+		dev_dbg(&adap->dev, "of_i2c: skipping already registered %s\n",
+			dev_name(n->dev));
+		return;
+	}
+
+	of_modalias_node(n, info.type, I2C_NAME_SIZE);
+
+	info.of_node = n;
+
+	addr = of_get_property(n, "reg", &len);
+	if (!addr || (len < sizeof(int))) {
+		dev_err(&adap->dev, "of_i2c: invalid reg on %pOF\n", n);
+		return;
+	}
+
+	info.addr = be32_to_cpup(addr);
+	if (info.addr > (1 << 10) - 1) {
+		dev_err(&adap->dev, "of_i2c: invalid addr=%x on %pOF\n",
+			info.addr, n);
+		return;
+	}
+
+	result = i2c_new_device(adap, &info);
+	if (!result)
+		dev_err(&adap->dev, "of_i2c: Failure registering %pOF\n", n);
+}
+
 static void of_i2c_register_devices(struct i2c_adapter *adap)
 {
 	struct device_node *n;
@@ -435,40 +471,8 @@ static void of_i2c_register_devices(struct i2c_adapter *adap)
 	if (!IS_ENABLED(CONFIG_OFDEVICE) || !adap->dev.of_node)
 		return;
 
-	for_each_available_child_of_node(adap->dev.of_node, n) {
-		struct i2c_board_info info = {};
-		struct i2c_client *result;
-		const __be32 *addr;
-		int len;
-
-		if (n->dev) {
-			dev_dbg(&adap->dev, "of_i2c: skipping already registered %s\n",
-				dev_name(n->dev));
-			continue;
-		}
-
-		of_modalias_node(n, info.type, I2C_NAME_SIZE);
-
-		info.of_node = n;
-
-		addr = of_get_property(n, "reg", &len);
-		if (!addr || (len < sizeof(int))) {
-			dev_err(&adap->dev, "of_i2c: invalid reg on %pOF\n", n);
-			continue;
-		}
-
-		info.addr = be32_to_cpup(addr);
-		if (info.addr > (1 << 10) - 1) {
-			dev_err(&adap->dev, "of_i2c: invalid addr=%x on %pOF\n",
-				info.addr, n);
-			continue;
-		}
-
-		result = i2c_new_device(adap, &info);
-		if (!result)
-			dev_err(&adap->dev, "of_i2c: Failure registering %pOF\n",
-			        n);
-	}
+	for_each_available_child_of_node(adap->dev.of_node, n)
+		of_i2c_register_device(adap, n);
 }
 
 int of_i2c_register_devices_by_node(struct device_node *node)

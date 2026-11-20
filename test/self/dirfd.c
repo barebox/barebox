@@ -161,6 +161,13 @@ static void check_removed(const char *at, int dirfd)
 	expect(statat(dirfd, "file", &s), -ENOENT, "statat(%s, file)", at);
 	expect(statat(dirfd, "sub/file", &s), -ENOENT,
 	       "statat(%s, sub/file)", at);
+	expect(statat(dirfd, ".", &s), -ENOENT, "statat(%s, .)", at);
+	expect(statat(dirfd, "./file", &s), -ENOENT, "statat(%s, ./file)", at);
+	expect(openat(dirfd, ".", O_PATH | O_DIRECTORY), -ENOENT,
+	       "openat(%s, ., O_DIRECTORY)", at);
+	expect(openat(dirfd, ".", O_WRONLY | O_CREAT), -ENOENT,
+	       "openat(%s, ., O_CREAT)", at);
+	expect(unlinkat(dirfd, ".", 0), -ENOENT, "unlinkat(%s, .)", at);
 	expect(openat(dirfd, "file", O_WRONLY | O_CREAT), -ENOENT,
 	       "openat(%s, file, O_CREAT)", at);
 	expect(mkdirat(dirfd, "sub", 0777), -ENOENT, "mkdirat(%s, sub)", at);
@@ -196,6 +203,16 @@ static void test_dirfd_removed(void)
 
 	check_removed("AT_FDCWD", AT_FDCWD);
 	check_removed(path, fd);
+	expect(chdir("."), -ENOENT, "chdir(.)");
+
+	/* a new directory of the same name must not revive the old one */
+	ret = mkdir(path, 0777);
+	if (expect(ret == 0, true, "mkdir(%s) again = %d", path, ret)) {
+		check_removed("AT_FDCWD", AT_FDCWD);
+		check_removed(path, fd);
+		ret = rmdir(path);
+		expect(ret == 0, true, "rmdir(%s) again = %d", path, ret);
+	}
 
 	popd(oldpwd);
 out:

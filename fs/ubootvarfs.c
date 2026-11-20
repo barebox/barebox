@@ -269,9 +269,10 @@ static int ubootvarfs_unlink(struct inode *dir, struct dentry *dentry)
 		/* open files keep the inode, see ubootvarfs_io() */
 		node->var = NULL;
 		inode->i_size = 0;
+		drop_nlink(inode);
 	}
 
-	return simple_unlink(dir, dentry);
+	return 0;
 }
 
 static int ubootvarfs_create(struct inode *dir, struct dentry *dentry,

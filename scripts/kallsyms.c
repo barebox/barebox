@@ -446,6 +446,8 @@ static void write_src(void)
 	printf("\n");
 
 	sort_symbols_by_name();
+	/* barebox: own section, so it's garbage collected when unused */
+	printf("\t.section .rodata.kallsyms_seqs_of_names, \"a\"\n");
 	output_label("kallsyms_seqs_of_names");
 	for (i = 0; i < table_cnt; i++)
 		printf("\t.byte 0x%02x, 0x%02x, 0x%02x\t/* %s */\n",

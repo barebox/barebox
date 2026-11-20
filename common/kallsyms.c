@@ -192,6 +192,20 @@ static int kallsyms_lookup_names(const char *name,
 	return 0;
 }
 
+static unsigned long kallsyms_lookup_name_linear(const char *name)
+{
+	char namebuf[KSYM_NAME_LEN];
+	unsigned int i, off;
+
+	for (i = 0, off = 0; i < kallsyms_num_syms; i++) {
+		off = kallsyms_expand_symbol(off, namebuf, ARRAY_SIZE(namebuf));
+		if (!strcmp(namebuf, name))
+			return kallsyms_sym_address(i);
+	}
+
+	return 0;
+}
+
 /* Lookup the address for this symbol. Returns 0 if not found. */
 unsigned long kallsyms_lookup_name(const char *name)
 {
@@ -201,6 +215,9 @@ unsigned long kallsyms_lookup_name(const char *name)
 	/* Skip the search for empty string. */
 	if (!*name)
 		return 0;
+
+	if (!IS_ENABLED(CONFIG_KALLSYMS_LOOKUP_NAME_BSEARCH))
+		return kallsyms_lookup_name_linear(name);
 
 	ret = kallsyms_lookup_names(name, &i, NULL);
 	if (!ret)

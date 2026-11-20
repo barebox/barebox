@@ -8,6 +8,7 @@ config KASAN
 	depends on (HAVE_ARCH_KASAN && CC_HAS_KASAN_GENERIC)
 	depends on MALLOC_TLSF
 	select PRINTF_HEXSTR
+	imply KALLSYMS_ALL
 	help
 	  Enables KASAN (KernelAddressSANitizer) - runtime memory debugger,
 	  designed to find out-of-bounds accesses and use-after-free bugs.

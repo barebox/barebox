@@ -630,6 +630,8 @@ int dhcp_set_result(struct eth_device *edev, struct dhcp_result *res)
 	if (res->domainname)
 		net_set_domainname(res->domainname);
 
+	edev->ifup = true;
+
 	if (res->tftp_server_name) {
 		IPaddr_t ip;
 
@@ -671,9 +673,6 @@ int dhcp(struct eth_device *edev, const struct dhcp_req_param *param)
 	ret = dhcp_set_result(edev, res);
 
 	dhcp_result_free(res);
-
-	if (!ret)
-		edev->ifup = true;
 
 	return ret;
 }

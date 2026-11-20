@@ -8,4 +8,4 @@ global.bootm.boot_atag=true
 global linux.bootargs.dyn.log="log_pos_goal=0x8fff0000"
 global linux.bootargs.dyn.root="rootwait root=/dev/mmcblk0p1 ro"
 
-bootm -c /dev/mmc1.kernel
+bootm /dev/mmc1.kernel

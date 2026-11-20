@@ -18,6 +18,9 @@ struct beep {
 static int sound_card_do_beep(struct sound_card *card,
 			      int freq, unsigned int us)
 {
+	if (!card->beep)
+		return -ENODEV;
+
 	if (freq == -1)
 		freq = card->bell_frequency;
 
@@ -110,7 +113,7 @@ int sound_card_beep_cancel(struct sound_card *card)
 
 	poller_async_cancel(&card->poller);
 
-	ret = card->beep(card, 0, 0);
+	ret = sound_card_do_beep(card, 0, 0);
 
 	list_for_each_entry_safe(beep, tmp, &card->tune, list) {
 		list_del(&beep->list);
@@ -118,4 +121,10 @@ int sound_card_beep_cancel(struct sound_card *card)
 	}
 
 	return ret;
+}
+
+void sound_card_disable(struct sound_card *card)
+{
+	sound_card_beep_cancel(card);
+	card->beep = NULL;
 }

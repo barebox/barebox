@@ -30,13 +30,14 @@ void *talloc_zero_size(const void *parent, size_t size);
 void *talloc_realloc_size(const void *parent, void *mem, size_t size);
 void talloc_free(void *mem);
 
+int talloc_add_destructor(const void *parent, void (*fn)(void *), void *data);
+void talloc_run_destructors(void *mem);
+
 char *talloc_strdup(const void *parent, const char *str);
 const char *talloc_strdup_const(const void *parent, const char *str);
 void talloc_free_const(const void *ptr);
 
 void *talloc_parent(const void *mem);
-void talloc_steal(const void *parent, void *mem);
-void talloc_steal_children(const void *parent, void *mem);
 
 size_t talloc_total_blocks(const void *mem);
 

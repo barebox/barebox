@@ -52,6 +52,12 @@ static int do_devunbind(int argc, char *argv[])
 			continue;
 		}
 
+		if (!dev->driver) {
+			printf("%s is not bound to a driver\n", argv[i]);
+			ret = COMMAND_ERROR;
+			continue;
+		}
+
 		if (!device_remove(dev)) {
 			printf("no remove callback registered for %s\n", argv[i]);
 			ret = COMMAND_ERROR;
@@ -59,7 +65,7 @@ static int do_devunbind(int argc, char *argv[])
 		}
 
 		dev->driver = NULL;
-		list_del(&dev->active);
+		list_del_init(&dev->active);
 	}
 
 	return ret;

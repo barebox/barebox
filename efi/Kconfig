@@ -64,6 +64,7 @@ endif
 
 config EFI_RUNTIME
 	bool
+	imply KALLSYMS_ALL
 
 if EFI_RUNTIME
 source "efi/runtime/Kconfig"

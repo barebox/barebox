@@ -53,13 +53,13 @@ config ZSTD_DECOMPRESS
 config XZ_DECOMPRESS
 	bool "include xz uncompression support"
 	select UNCOMPRESS
-	select XZ_DEC_X86
-	select XZ_DEC_POWERPC
-	select XZ_DEC_IA64
-	select XZ_DEC_ARM
-	select XZ_DEC_ARMTHUMB
-	select XZ_DEC_SPARC
-	select XZ_DEC_ARM64
+	select XZ_DEC_X86 if X86 || SANDBOX
+	select XZ_DEC_POWERPC if PPC || SANDBOX
+	select XZ_DEC_IA64 if SANDBOX
+	select XZ_DEC_ARM if ARM32 || SANDBOX
+	select XZ_DEC_ARMTHUMB if ARM32 || SANDBOX
+	select XZ_DEC_SPARC if SANDBOX
+	select XZ_DEC_ARM64 if ARM64 || SANDBOX
 
 config SMBIOS
 	bool "SMBIOS utility functions" if COMPILE_TEST
@@ -71,25 +71,25 @@ config SMBIOS
 	  a hardware watchdog has been enabled.
 
 config XZ_DEC_X86
-	bool
+	bool "x86 BCJ filter decoder" if COMPILE_TEST
 
 config XZ_DEC_POWERPC
-	bool
+	bool "PowerPC BCJ filter decoder" if COMPILE_TEST
 
 config XZ_DEC_IA64
-	bool
+	bool "Itanium BCJ filter decoder" if COMPILE_TEST
 
 config XZ_DEC_ARM
-	bool
+	bool "ARM BCJ filter decoder" if COMPILE_TEST
 
 config XZ_DEC_ARMTHUMB
-	bool
+	bool "ARM-Thumb BCJ filter decoder" if COMPILE_TEST
 
 config XZ_DEC_SPARC
-	bool
+	bool "SPARC BCJ filter decoder" if COMPILE_TEST
 
 config XZ_DEC_ARM64
-	bool
+	bool "ARM64 BCJ filter decoder" if COMPILE_TEST
 
 config REED_SOLOMON
 	bool

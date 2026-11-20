@@ -515,6 +515,22 @@ config KALLSYMS
 	  With Kallsyms enabled all symbols are compiled into the barebox image.
 	  This is useful to print a nice backtrace when an exception occurs.
 
+config KALLSYMS_ALL
+	depends on KALLSYMS
+	bool "Include all symbols in kallsyms"
+	help
+	  Include the symbols of all sections, so data symbols can be
+	  resolved as well. Say N to only include the symbols up to _etext,
+	  which is enough for backtraces and saves some binary size.
+
+config KALLSYMS_LOOKUP_NAME_BSEARCH
+	depends on KALLSYMS
+	bool "binary search for symbol names"
+	help
+	  Add a table of all symbols sorted by name, so looking up a symbol's
+	  address by its name, e.g. with the kallsyms command, is a binary
+	  search instead of a linear scan. This costs 3 bytes per symbol.
+
 config RELOCATABLE
 	depends on PPC || ARM || RISCV
 	bool "generate relocatable barebox binary"

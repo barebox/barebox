@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 #include <mach/zynq/zynq-pcap.h>
+#include <mach/zynq/zynq7000-regs.h>
 #include <linux/iopoll.h>
 
 struct zynq_private {

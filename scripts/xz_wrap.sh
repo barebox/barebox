@@ -25,6 +25,12 @@ if grep -q '^CONFIG_THUMB2_BAREBOX=y$' include/config/auto.conf; then
 	BCJ=--armthumb
 fi
 
+# Match the literal coding to the instruction alignment like Linux does
+case $BCJ in
+	--arm|--arm64)	LZMA2OPTS=lp=2,lc=2 ;;
+	--armthumb)	LZMA2OPTS=lp=1 ;;
+esac
+
 # clear BCJ filter if unsupported
 if [ -n "${BCJ}" ]; then
 	$XZ -H | grep -q -- $BCJ || BCJ=

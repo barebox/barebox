@@ -76,8 +76,11 @@ static int jffs2_get_block(struct jffs2_file *jf, unsigned int pos)
 	if (pos != jf->offset) {
 		ret = jffs2_read_inode_range(c, f, jf->buf, pos,
 					     JFFS2_BLOCK_SIZE);
-		if (ret && ret != -ENOENT)
+		if (ret && ret != -ENOENT) {
+			/* jf->buf has been partly overwritten */
+			jf->offset = -1;
 			return ret;
+		}
 		jf->offset = pos;
 	}
 
@@ -221,6 +224,8 @@ struct inode *jffs2_iget(struct super_block *sb, unsigned long ino)
 
 	mutex_unlock(&f->sem);
 
+	unlock_new_inode(inode);
+
 	jffs2_dbg(1, "jffs2_read_inode() returning\n");
 	return inode;
 
@@ -320,6 +325,13 @@ int jffs2_do_fill_super(struct super_block *sb, int silent)
 		goto out_root;
 	}
 
+	if (!S_ISDIR(root_i->i_mode)) {
+		pr_err("root inode is not a directory\n");
+		iput(root_i);
+		ret = -EINVAL;
+		goto out_root;
+	}
+
 	ret = -ENOMEM;
 
 	jffs2_dbg(1, "%s(): d_make_root()\n", __func__);
@@ -337,6 +349,7 @@ int jffs2_do_fill_super(struct super_block *sb, int silent)
 out_root:
 	jffs2_free_ino_caches(c);
 	jffs2_free_raw_node_refs(c);
+	kfree(c->blocks);
 out_inohash:
 	kfree(c->inocache_list);
 out_wbuf:
@@ -426,7 +439,7 @@ static int jffs2_probe(struct device *dev)
 		ret = jffs2_compressors_init();
 		if (ret) {
 			pr_err("error: Failed to initialise compressors\n");
-			goto err_out;
+			goto err_free;
 		}
 	}
 
@@ -441,7 +454,11 @@ static int jffs2_probe(struct device *dev)
 	return 0;
 
 err_compressors:
-	jffs2_compressors_exit();
+	if (!jffs2_probe_cnt)
+		jffs2_compressors_exit();
+err_free:
+	sb->s_fs_info = NULL;
+	kfree(ctx);
 err_out:
 
 	return ret;

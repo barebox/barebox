@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: GPL-2.0-only
+menu "Amlogic SoC drivers"
+
+config MESON_CLK_MEASURE
+	bool "Amlogic Meson SoC Clock Measure driver"
+	depends on ARCH_MESON || COMPILE_TEST
+	help
+	  Say yes to support measuring a set of internal SoC clocks.
+	  devinfo on the clock-measure device lists their rates.
+
+config MESON_GX_SOCINFO
+	bool "Amlogic Meson GX SoC Information driver"
+	depends on ARCH_MESON || COMPILE_TEST
+	default ARCH_MESON
+	select MFD_SYSCON
+	select SOC_BUS
+	help
+	  Say yes to support decoding of Amlogic Meson GX SoC family
+	  information about the type, package and version.
+
+endmenu

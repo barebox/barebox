@@ -132,6 +132,12 @@ static inline struct reset_control *reset_control_get(struct device *dev,
 	return __reset_control_get(dev, id, false);
 }
 
+/* device_reset() already succeeds for a device without resets */
+static inline int __must_check device_reset_optional(struct device *dev)
+{
+	return device_reset(dev);
+}
+
 /**
  * reset_control_bulk_get - Lookup and obtain references to
  *                                    multiple reset controllers.

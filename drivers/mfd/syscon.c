@@ -50,6 +50,7 @@ static struct syscon *of_syscon_register(struct device_node *np, bool check_clk)
 		goto err_map;
 	}
 
+	syscon->np = np;
 	syscon->base = IOMEM(res.start);
 
 	/* Parse the device's DT node for an endianness specification */

@@ -8,14 +8,25 @@
 #include <debug_ll.h>
 #include <asm/cache.h>
 #include <asm/sections.h>
+#include <compressed-dtb.h>
 #include <pbl.h>
+
+/* Use the appended device tree on raw entry or if none is passed */
+static void *dt_2nd_fdt(void *fdt, bool raw_entry)
+{
+	if (blob_is_fdt(__image_end) &&
+	    (raw_entry || !fdt || !blob_is_fdt(fdt)))
+		return __image_end;
+
+	return fdt;
+}
 
 #ifdef CONFIG_CPU_V8
 
 /* called from assembly */
-void dt_2nd_aarch64(void *fdt);
+void dt_2nd_aarch64(void *fdt, bool raw_entry);
 
-void dt_2nd_aarch64(void *fdt)
+void dt_2nd_aarch64(void *fdt, bool raw_entry)
 {
 	unsigned long membase, memsize;
 
@@ -28,6 +39,7 @@ void dt_2nd_aarch64(void *fdt)
 	relocate_to_current_adr();
 	setup_c();
 
+	fdt = dt_2nd_fdt(fdt, raw_entry);
 	if (!fdt)
 		hang();
 
@@ -42,6 +54,7 @@ static noinline void dt_2nd_continue(void *fdt)
 {
 	unsigned long membase, memsize;
 
+	fdt = dt_2nd_fdt(fdt, false);
 	if (!fdt)
 		hang();
 

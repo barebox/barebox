@@ -93,6 +93,7 @@ static const struct filetype_str filetype_str[] = {
 	[filetype_x86_efi_linux_image] = { "x86 Linux/EFI image", "x86-efi-linux" },
 	[filetype_pxa_ntim] = { "Marvell PXA3xx NTIM image", "pxa-ntim" },
 	[filetype_zboot_efi_linux_image] = { "Linux/EFI zboot image", "zboot-efi-linux" },
+	[filetype_amlogic_fip] = { "Amlogic Firmware Image Package", "amlogic-fip" },
 };
 
 static const char *file_type_to_nr_string(enum filetype f)
@@ -152,23 +153,22 @@ static inline int pmbr_part_valid(const uint8_t *buf)
 }
 
 /**
- * is_gpt_valid(): test Protective MBR for validity and EFI PART
+ * is_gpt_valid(): test Protective MBR for validity
  * @mbr: pointer to a legacy mbr structure
  *
- * Description: Returns 1 if PMBR is valid and EFI PART, 0 otherwise.
- * Validity depends on three things:
+ * Description: Returns 1 if PMBR is valid, 0 otherwise.
+ * Validity depends on two things:
  *  1) MSDOS signature is in the last two bytes of the MBR
- *  2) One partition of type 0xEE is found
- *  3) EFI GPT signature is at the next logical block
+ *  2) One partition of type 0xEE starting at LBA 1 is found
+ *
+ * As in Linux, the primary GPT header doesn't count, the EFI partition
+ * parser can fall back to the alternate one.
  */
-static int is_gpt_valid(const uint8_t *buf, unsigned int sector_size)
+static int is_gpt_valid(const uint8_t *buf)
 {
 	int i;
 
 	if (get_unaligned_le16(&buf[BS_55AA]) != 0xAA55)
-		return 0;
-
-	if (strncmp(buf + sector_size, "EFI PART", 8))
 		return 0;
 
 	buf += MBR_Table;
@@ -284,7 +284,7 @@ enum filetype file_detect_partition_table(const void *_buf,
 	 * EFI GPT need to be detected before MBR otherwise
 	 * we will detect a MBR
 	 */
-	if (bufsize >= sector_size + 8 && is_gpt_valid(buf8, sector_size))
+	if (bufsize >= sector_size + 8 && is_gpt_valid(buf8))
 		return filetype_gpt;
 
 	type = is_fat_or_mbr(buf8, NULL);
@@ -404,6 +404,14 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 		return filetype_rockchip_rkss_image;
 	if (le32_to_cpu(buf[0]) == le32_to_cpu(0xaa640001))
 		return filetype_fip;
+	/* Amlogic's FIP has 16 bytes in front of the ToC */
+	if (!buf[0] && !buf[1] && !buf[2] && !buf[3] &&
+	    le32_to_cpu(buf[4]) == 0xaa640001)
+		return filetype_amlogic_fip;
+	/* the Amlogic G12 boot image starts with BL2, 64 KiB as its header says */
+	if (le32_to_cpu(buf[4]) == 0x4c4d4140 /* @AML */ &&
+	    le32_to_cpu(buf[5]) == 0x10000 - 0x10)
+		return filetype_amlogic_fip;
 
 	if ((buf8[0] == 0x5a || buf8[0] == 0x69 || buf8[0] == 0x78 ||
 	     buf8[0] == 0x8b || buf8[0] == 0x9c) &&
@@ -599,6 +607,7 @@ bool filetype_is_barebox_image(enum filetype ft)
 	case filetype_layerscape_qspi_image:
 	case filetype_stm32_image_fsbl_v1:
 	case filetype_fip:
+	case filetype_amlogic_fip:
 		return true;
 	default:
 		return false;

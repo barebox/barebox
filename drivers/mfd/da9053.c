@@ -286,6 +286,14 @@ static __maybe_unused struct of_device_id da9053_dt_ids[] = {
 	{
 		.compatible = "dlg,da9052",
 	}, {
+		.compatible = "dlg,da9053-aa",
+	}, {
+		.compatible = "dlg,da9053-ba",
+	}, {
+		.compatible = "dlg,da9053-bb",
+	}, {
+		.compatible = "dlg,da9053-bc",
+	}, {
 		/* sentinel */
 	}
 };

@@ -284,8 +284,12 @@ static int ubootvarfs_create(struct inode *dir, struct dentry *dentry,
 	struct ubootvarfs_var *var;
 	size_t len = strlen(dentry->name);
 
-	/* U-Boot splits a variable at its first '=' */
-	if (strchr(dentry->name, '='))
+	/*
+	 * U-Boot splits a variable at its first '=', drops blanks in front
+	 * of a name and skips a record starting with '#' as a comment
+	 */
+	if (strchr(dentry->name, '=') || dentry->name[0] == ' ' ||
+	    dentry->name[0] == '\t' || dentry->name[0] == '#')
 		return -EINVAL;
 
 	/*

@@ -123,24 +123,35 @@ static int cramfs_read_file(struct inode *inode, unsigned long offset,
 	struct cramfs_priv *priv = fsdev->dev.priv;
 	unsigned int blocknr;
 	int outsize = 0;
-	int ofs = offset % 4096;
 	static char cramfs_read_buf[4096];
 
 	while (size) {
 		uint32_t base;
-		int copy;
+		int copy, ofs;
+		ssize_t ret;
 
 		blocknr = (offset + outsize) >> 12;
-		if (blocknr)
-			cdev_read(priv->cdev, &base, 4,
-				  OFFSET(inode) + (blocknr - 1) * 4, 0);
-		else
+		ofs = (offset + outsize) % 4096;
+		if (blocknr) {
+			ret = cdev_read(priv->cdev, &base, 4,
+					OFFSET(inode) + (blocknr - 1) * 4, 0);
+			if (ret < 0)
+				return ret;
+			if (ret != 4)
+				return -EIO;
+		} else {
 			base = (CRAMFS_GET_OFFSET(cramfs_inode) +
 				(((CRAMFS_24 (cramfs_inode->size)) + 4095) >> 12)) << 2;
+		}
 
 		if (priv->curr_base < 0 || priv->curr_base != base) {
 
-			cdev_read(priv->cdev, cramfs_read_buf, 4096, base, 0);
+			ret = cdev_read(priv->cdev, cramfs_read_buf, 4096, base, 0);
+			if (ret < 0)
+				return ret;
+
+			/* priv->buf won't hold the cached block anymore */
+			priv->curr_base = -1;
 			priv->curr_block_len = cramfs_uncompress_block(priv->buf, 4096,
 					cramfs_read_buf, 4096);
 			if (priv->curr_block_len <= 0)
@@ -149,10 +160,13 @@ static int cramfs_read_file(struct inode *inode, unsigned long offset,
 			priv->curr_base = base;
 		}
 
-		copy = min_t(size_t, priv->curr_block_len, size);
+		/* only the last block of a file may be short */
+		if (ofs >= priv->curr_block_len)
+			break;
+
+		copy = min_t(size_t, priv->curr_block_len - ofs, size);
 
 		memcpy(buf, priv->buf + ofs, copy);
-		ofs = 0;
 
 		outsize += copy;
 		size -= copy;
@@ -248,6 +262,7 @@ static struct inode *get_cramfs_inode(struct super_block *sb,
 		inode->i_op = &cramfs_symlink_inode_operations;
 		break;
 	default:
+		iput(inode);
 		return NULL;
 	}
 
@@ -287,12 +302,21 @@ static struct dentry *cramfs_lookup(struct inode *dir, struct dentry *dentry,
 		char *name;
 		int namelen, retval;
 		int dir_off = OFFSET(dir) + offset;
+		ssize_t ret;
 
-		cdev_read(priv->cdev, de, sizeof(*de) + CRAMFS_MAXPATHLEN, dir_off, 0);
+		ret = cdev_read(priv->cdev, de, sizeof(*de) + CRAMFS_MAXPATHLEN, dir_off, 0);
+		if (ret < 0) {
+			inode = ERR_PTR(ret);
+			goto out;
+		}
 
 		name = (char *)(de + 1);
 
 		namelen = de->namelen << 2;
+		if (ret < (ssize_t)(sizeof(*de) + namelen)) {
+			inode = ERR_PTR(-EIO);
+			goto out;
+		}
 		offset += sizeof(*de) + namelen;
 
 		/* Quick check that the name is roughly the right length */
@@ -375,9 +399,14 @@ static int cramfs_iterate(struct file *file, struct dir_context *ctx)
 		ino_t ino;
 		umode_t mode;
 		int namelen;
+		ssize_t len;
 
-		cdev_read(priv->cdev, de, sizeof(*de) + CRAMFS_MAXPATHLEN,
-			  OFFSET(dir) + offset, 0);
+		len = cdev_read(priv->cdev, de, sizeof(*de) + CRAMFS_MAXPATHLEN,
+				OFFSET(dir) + offset, 0);
+		if (len < 0) {
+			ret = len;
+			goto out;
+		}
 		name = (char *)(de + 1);
 
 		/*
@@ -386,6 +415,10 @@ static int cramfs_iterate(struct file *file, struct dir_context *ctx)
 		 * with zeroes.
 		 */
 		namelen = de->namelen << 2;
+		if (len < (ssize_t)(sizeof(*de) + namelen)) {
+			ret = -EIO;
+			goto out;
+		}
 		memcpy(buf, name, namelen);
 		ino = cramino(de, OFFSET(dir) + offset);
 		mode = de->mode;
@@ -476,18 +509,21 @@ static int cramfs_probe(struct device *dev)
 	if (cramfs_read_super(priv)) {
 		dev_info(dev, "no valid cramfs found\n");
 		ret =  -EINVAL;
+		goto err_out;
 	}
 
 	priv->curr_base = -1;
 
-	cramfs_uncompress_init ();
-
 	sb->s_op = &cramfs_ops;
 
 	root = get_cramfs_inode(sb, &priv->super.root, 0);
-	if (IS_ERR(root))
-		return PTR_ERR(root);
+	if (!root) {
+		ret = -EINVAL;
+		goto err_out;
+	}
 	sb->s_root = d_make_root(root);
+
+	cramfs_uncompress_init();
 
 	return 0;
 

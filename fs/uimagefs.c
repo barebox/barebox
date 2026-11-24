@@ -84,8 +84,6 @@ static int uimagefs_open(struct device *dev, struct file *file, const char *file
 		d->fd = open(priv->filename, O_RDONLY);
 		if (d->fd < 0)
 			return d->fd;
-
-		lseek(d->fd, d->offset, SEEK_SET);
 	}
 
 	file->f_size = d->size;
@@ -108,23 +106,11 @@ static int uimagefs_read(struct file *file, void *buf, size_t insize)
 	struct uimagefs_handle_data *d = file->private_data;
 
 	if (!uimagefs_is_data_file(d)) {
-		memcpy(buf, &d->data[d->pos], insize);
+		memcpy(buf, &d->data[file->f_pos], insize);
 		return insize;
 	} else {
-		return read(d->fd, buf, insize);
+		return pread(d->fd, buf, insize, d->offset + file->f_pos);
 	}
-}
-
-static int uimagefs_lseek(struct file *file, loff_t pos)
-{
-	struct uimagefs_handle_data *d = file->private_data;
-
-	if (uimagefs_is_data_file(d))
-		lseek(d->fd, d->offset + pos, SEEK_SET);
-
-	d->pos = pos;
-
-	return 0;
 }
 
 static DIR *uimagefs_opendir(struct device *dev, const char *pathname)
@@ -320,6 +306,9 @@ static int uimagefs_add_os(struct uimagefs_handle *priv)
 	struct image_header *header = &priv->header;
 	char *val = xstrdup(image_get_os_name(header->ih_os));
 
+	if (!val)
+		return uimagefs_add_hex(priv, UIMAGEFS_OS, header->ih_os);
+
 	return uimagefs_add_str(priv, UIMAGEFS_OS, val);
 }
 
@@ -327,6 +316,9 @@ static int uimagefs_add_arch(struct uimagefs_handle *priv)
 {
 	struct image_header *header = &priv->header;
 	char *val = xstrdup(image_get_arch_name(header->ih_arch));
+
+	if (!val)
+		return uimagefs_add_hex(priv, UIMAGEFS_ARCH, header->ih_arch);
 
 	return uimagefs_add_str(priv, UIMAGEFS_ARCH, val);
 }
@@ -336,6 +328,9 @@ static int uimagefs_add_type(struct uimagefs_handle *priv)
 	struct image_header *header = &priv->header;
 	char *val = xstrdup(image_get_type_name(header->ih_type));
 
+	if (!val)
+		return uimagefs_add_hex(priv, UIMAGEFS_TYPE, header->ih_type);
+
 	return uimagefs_add_str(priv, UIMAGEFS_TYPE, val);
 }
 
@@ -343,6 +338,9 @@ static int uimagefs_add_comp(struct uimagefs_handle *priv)
 {
 	struct image_header *header = &priv->header;
 	char *val = xstrdup(image_get_comp_name(header->ih_comp));
+
+	if (!val)
+		return uimagefs_add_hex(priv, UIMAGEFS_COMP, header->ih_comp);
 
 	return uimagefs_add_str(priv, UIMAGEFS_COMP, val);
 }
@@ -447,14 +445,23 @@ static int __uimage_open(struct uimagefs_handle *priv)
 		do {
 			u32 size;
 
-			ret = read(fd, &size, sizeof(size));
+			ret = read_full(fd, &size, sizeof(size));
 			if (ret < 0)
 				goto err_out;
+			if (ret != sizeof(size)) {
+				ret = -EINVAL;
+				goto err_out;
+			}
 
 			offset += sizeof(size);
 
 			if (!size)
 				break;
+
+			if (priv->nb_data_entries >= MAX_MULTI_IMAGE_COUNT) {
+				ret = -EINVAL;
+				goto err_out;
+			}
 
 			ret = uimagefs_add_data_entry(priv, 0, uimage_to_cpu(size));
 			if (ret)
@@ -523,7 +530,6 @@ static const struct fs_legacy_ops uimagefs_ops = {
 	.closedir  = uimagefs_closedir,
 	.stat      = uimagefs_stat,
 	.read      = uimagefs_read,
-	.lseek     = uimagefs_lseek,
 	.ioctl	   = uimagefs_ioctl,
 };
 

@@ -85,6 +85,8 @@ static int v9fs_dir_readdir_dotl(struct file *file, struct dir_context *ctx)
 	int buflen;
 	struct p9_rdir *rdir;
 	struct p9_dirent curdirent;
+	loff_t *offsets = NULL;
+	unsigned int noffsets = 0, i;
 
 	p9_debug(P9_DEBUG_VFS, "name %s\n", file->path);
 	fid = file->private_data;
@@ -97,10 +99,26 @@ static int v9fs_dir_readdir_dotl(struct file *file, struct dir_context *ctx)
 
 	while (1) {
 		if (rdir->tail == rdir->head) {
+			/*
+			 * A server that returns entries without advancing the
+			 * offset, or that leads back to an offset we already
+			 * requested, would keep us going forever.
+			 */
+			for (i = 0; i < noffsets; i++) {
+				if (offsets[i] == ctx->pos) {
+					pr_err("readdir doesn't make progress\n");
+					err = -EIO;
+					goto out;
+				}
+			}
+			offsets = xrealloc(offsets,
+					   (noffsets + 1) * sizeof(*offsets));
+			offsets[noffsets++] = ctx->pos;
+
 			err = p9_client_readdir(fid, rdir->buf, buflen,
 						ctx->pos);
 			if (err <= 0)
-				return err;
+				goto out;
 
 			rdir->head = 0;
 			rdir->tail = err;
@@ -112,7 +130,8 @@ static int v9fs_dir_readdir_dotl(struct file *file, struct dir_context *ctx)
 					    &curdirent);
 			if (err < 0) {
 				p9_debug(P9_DEBUG_VFS, "returned %d\n", err);
-				return -EIO;
+				err = -EIO;
+				goto out;
 			}
 
 			dir_emit(ctx, curdirent.d_name,
@@ -124,6 +143,11 @@ static int v9fs_dir_readdir_dotl(struct file *file, struct dir_context *ctx)
 			rdir->head += err;
 		}
 	}
+
+out:
+	free(offsets);
+
+	return err;
 }
 
 

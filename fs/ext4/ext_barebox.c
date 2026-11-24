@@ -41,6 +41,12 @@ ssize_t ext4fs_devread(struct ext_filesystem *fs, sector_t __sector, int byte_of
 		return size;
 	}
 
+	if (size != byte_len) {
+		dev_err(fs->dev, "short read at sector %llu: %zd of %zu bytes\n",
+			__sector, size, byte_len);
+		return -EIO;
+	}
+
 	return 0;
 }
 
@@ -130,8 +136,9 @@ static struct dentry *ext_lookup(struct inode *dir, struct dentry *dentry,
 
 	if (ino) {
 		inode = ext_get_inode(dir->i_sb, ino);
-		if (inode)
-			d_add(dentry, inode);
+		if (IS_ERR(inode))
+			return ERR_CAST(inode);
+		d_add(dentry, inode);
 	}
 
 	return NULL;
@@ -241,8 +248,10 @@ struct inode *ext_get_inode(struct super_block *sb, int ino)
 	node = container_of(inode, struct ext2fs_node, i);
 
 	ret = ext4fs_read_inode(fs->data, ino, &node->inode);
-	if (ret)
-		return NULL;
+	if (ret) {
+		iput(inode);
+		return ERR_PTR(ret);
+	}
 
 	inode->i_ino = ino;
 	inode->i_mode = le16_to_cpu(node->inode.mode);
@@ -250,7 +259,14 @@ struct inode *ext_get_inode(struct super_block *sb, int ino)
 
 	switch (inode->i_mode & S_IFMT) {
 	default:
-		return NULL;
+		iput(inode);
+		return ERR_PTR(-EUCLEAN);
+	case S_IFCHR:
+	case S_IFBLK:
+	case S_IFIFO:
+	case S_IFSOCK:
+		/* can be listed, but not opened */
+		break;
 	case S_IFREG:
 		inode->i_op = &ext_inode_operations;
 		inode->i_fop = &ext_file_operations;
@@ -299,13 +315,14 @@ static int ext_probe(struct device *dev)
 	sb->s_op = &ext_ops;
 
 	inode = ext_get_inode(sb, 2);
-	if (!inode) {
-		ret = -EINVAL;
+	if (IS_ERR(inode)) {
+		ret = PTR_ERR(inode);
 		goto err_umount;
 	}
 
 	if (!S_ISDIR(inode->i_mode)) {
 		dev_err(dev, "root inode is not a directory\n");
+		iput(inode);
 		ret = -EINVAL;
 		goto err_umount;
 	}

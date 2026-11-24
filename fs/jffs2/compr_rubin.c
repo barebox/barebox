@@ -75,6 +75,10 @@ static inline int pullbit(struct pushpull *pp)
 {
 	int bit;
 
+	/* Read zeroes beyond the end of the input */
+	if (pp->ofs >= pp->buflen)
+		return 0;
+
 	bit = (pp->buf[pp->ofs >> 3] >> (7-(pp->ofs & 7))) & 1;
 
 	pp->ofs++;
@@ -191,7 +195,7 @@ static void rubin_do_decompress(int bit_divider, int *bits,
 	int outpos = 0;
 	struct rubin_state rs;
 
-	init_pushpull(&rs.pp, cdata_in, srclen, 0, 0);
+	init_pushpull(&rs.pp, cdata_in, srclen * 8, 0, 0);
 	init_decode(&rs, bit_divider, bits);
 
 	while (outpos < destlen)
@@ -214,6 +218,9 @@ static int jffs2_dynrubin_decompress(unsigned char *data_in,
 {
 	int bits[8];
 	int c;
+
+	if (sourcelen < 8)
+		return -EIO;
 
 	for (c=0; c<8; c++)
 		bits[c] = data_in[c];

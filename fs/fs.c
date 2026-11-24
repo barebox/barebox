@@ -396,6 +396,9 @@ int ftruncate(int fd, loff_t length)
 	if (length < 0)
 		return errno_set(-EINVAL);
 
+	if ((f->f_flags & O_ACCMODE) == O_RDONLY)
+		return errno_set(-EBADF);
+
 	if (!i_size_is_bound(f->f_inode))
 		return 0;
 

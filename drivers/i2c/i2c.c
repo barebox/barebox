@@ -405,15 +405,16 @@ static struct i2c_client *i2c_new_device(struct i2c_adapter *adapter,
 
 	client->dev.parent = &adapter->dev;
 
+	/* claim the node before probe can rescan the bus */
+	of_node_set_dev(chip->of_node, &client->dev);
+
 	status = register_device(&client->dev);
 	if (status) {
+		of_node_set_dev(chip->of_node, NULL);
 		free(client);
 		return NULL;
 	}
 	devinfo_add(&client->dev, i2c_info);
-
-	if (chip->of_node)
-		chip->of_node->dev = &client->dev;
 
 	dev_dbg(&client->dev, "registered on bus %d, chip->addr 0x%02x\n",
 		adapter->nr, client->addr);
@@ -427,6 +428,42 @@ void i2c_unregister_device(struct i2c_client *client)
 	devinfo_del(&client->dev, i2c_info);
 }
 
+static void of_i2c_register_device(struct i2c_adapter *adap,
+				   struct device_node *n)
+{
+	struct i2c_board_info info = {};
+	struct i2c_client *result;
+	const __be32 *addr;
+	int len;
+
+	if (n->dev) {
+		dev_dbg(&adap->dev, "of_i2c: skipping already registered %s\n",
+			dev_name(n->dev));
+		return;
+	}
+
+	of_modalias_node(n, info.type, I2C_NAME_SIZE);
+
+	info.of_node = n;
+
+	addr = of_get_property(n, "reg", &len);
+	if (!addr || (len < sizeof(int))) {
+		dev_err(&adap->dev, "of_i2c: invalid reg on %pOF\n", n);
+		return;
+	}
+
+	info.addr = be32_to_cpup(addr);
+	if (info.addr > (1 << 10) - 1) {
+		dev_err(&adap->dev, "of_i2c: invalid addr=%x on %pOF\n",
+			info.addr, n);
+		return;
+	}
+
+	result = i2c_new_device(adap, &info);
+	if (!result)
+		dev_err(&adap->dev, "of_i2c: Failure registering %pOF\n", n);
+}
+
 static void of_i2c_register_devices(struct i2c_adapter *adap)
 {
 	struct device_node *n;
@@ -435,40 +472,8 @@ static void of_i2c_register_devices(struct i2c_adapter *adap)
 	if (!IS_ENABLED(CONFIG_OFDEVICE) || !adap->dev.of_node)
 		return;
 
-	for_each_available_child_of_node(adap->dev.of_node, n) {
-		struct i2c_board_info info = {};
-		struct i2c_client *result;
-		const __be32 *addr;
-		int len;
-
-		if (n->dev) {
-			dev_dbg(&adap->dev, "of_i2c: skipping already registered %s\n",
-				dev_name(n->dev));
-			continue;
-		}
-
-		of_modalias_node(n, info.type, I2C_NAME_SIZE);
-
-		info.of_node = n;
-
-		addr = of_get_property(n, "reg", &len);
-		if (!addr || (len < sizeof(int))) {
-			dev_err(&adap->dev, "of_i2c: invalid reg on %pOF\n", n);
-			continue;
-		}
-
-		info.addr = be32_to_cpup(addr);
-		if (info.addr > (1 << 10) - 1) {
-			dev_err(&adap->dev, "of_i2c: invalid addr=%x on %pOF\n",
-				info.addr, n);
-			continue;
-		}
-
-		result = i2c_new_device(adap, &info);
-		if (!result)
-			dev_err(&adap->dev, "of_i2c: Failure registering %pOF\n",
-			        n);
-	}
+	for_each_available_child_of_node(adap->dev.of_node, n)
+		of_i2c_register_device(adap, n);
 }
 
 int of_i2c_register_devices_by_node(struct device_node *node)
@@ -485,14 +490,19 @@ int of_i2c_register_devices_by_node(struct device_node *node)
 	return 0;
 }
 
-static void i2c_hw_rescan(struct device *dev)
+static void i2c_hw_rescan(struct device *dev, struct device_node *np)
 {
 	struct i2c_adapter *adap;
 
 	for_each_i2c_adapter(adap) {
 		if (dev != adap->dev.parent)
 			continue;
-		of_i2c_register_devices(adap);
+
+		if (!np)
+			of_i2c_register_devices(adap);
+		else if (np->parent == adap->dev.of_node &&
+			 of_device_is_available(np))
+			of_i2c_register_device(adap, np);
 		break;
 	}
 }
@@ -738,16 +748,17 @@ int i2c_add_numbered_adapter(struct i2c_adapter *adapter)
 
 	slice_init(&adapter->slice, dev_name(&adapter->dev));
 
-	/* populate children from any i2c device tables */
-	scan_boardinfo(adapter);
-
-	of_i2c_register_devices(adapter);
-
+	/* children probed below may need their siblings created on demand */
 	hw_dev = adapter->dev.parent;
 	if (hw_dev && dev_of_node(hw_dev)) {
 		if (!hw_dev->rescan)
 			hw_dev->rescan = i2c_hw_rescan;
 	}
+
+	/* populate children from any i2c device tables */
+	scan_boardinfo(adapter);
+
+	of_i2c_register_devices(adapter);
 
 	return 0;
 }

@@ -114,10 +114,10 @@ void free_device(struct device *dev);
 void devres_release_all(struct device *dev);
 void devres_run_actions(struct device *dev);
 
-static inline void device_rescan(struct device *dev)
+static inline void device_rescan(struct device *dev, struct device_node *np)
 {
 	if (dev->rescan)
-		dev->rescan(dev);
+		dev->rescan(dev, np);
 }
 
 /* Iterate over a devices children

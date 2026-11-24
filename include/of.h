@@ -134,6 +134,12 @@ static inline struct device_node *of_node_get(struct device_node *node)
 static inline void of_node_put(struct device_node *node) { }
 DEFINE_FREE(device_node, struct device_node *, if (_T) of_node_put(_T))
 
+static inline void of_node_set_dev(struct device_node *np, struct device *dev)
+{
+	if (np)
+		np->dev = dev;
+}
+
 void of_print_property(const void *data, int len);
 void of_print_cmdline(struct device_node *root);
 

@@ -15,6 +15,7 @@
 #include <driver.h>
 #include <of_device.h>
 #include <linux/regmap.h>
+#include <linux/device.h>
 #include <soc/at91/atmel-sfr.h>
 #include <linux/time.h>
 #include <linux/printk.h>
@@ -78,11 +79,6 @@ struct atmel_smc_timing_xlate {
 
 #define ATMEL_SMC_CYCLE_XLATE(nm, pos)	\
 	{ .name = nm, .converter = atmel_smc_cs_conf_set_cycle, .shift = pos}
-
-static inline void *devm_kzalloc(struct device *dev, size_t size, gfp_t flags)
-{
-	return kzalloc(size, flags);
-}
 
 static void at91sam9_ebi_get_config(struct atmel_ebi_dev *ebid,
 				    struct atmel_ebi_dev_config *conf)

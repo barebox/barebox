@@ -78,10 +78,23 @@ int device_probe(struct device *dev);
  *
  * @dev: Device
  *
+ * Runs the bus or driver specific removal code, if any, and releases the
+ * device's managed resources either way.
+ *
  * Returns true if there was any bus or driver specific removal
- * code that was executed and false if the function was a no-op.
+ * code that was executed and false if there was none.
  */
 bool device_remove(struct device *dev);
+
+/**
+ * device_has_remove - Check if a device has removal code to run
+ *
+ * @dev: Device
+ *
+ * Returns true if device_remove() would execute bus or driver specific
+ * removal code for @dev.
+ */
+bool device_has_remove(struct device *dev);
 
 /* detect devices attached to this device (cards, disks,...) */
 int device_detect(struct device *dev);
@@ -97,6 +110,9 @@ static inline void put_device(struct device *dev) {}
 
 void free_device_res(struct device *dev);
 void free_device(struct device *dev);
+
+void devres_release_all(struct device *dev);
+void devres_run_actions(struct device *dev);
 
 static inline void device_rescan(struct device *dev)
 {
@@ -177,9 +193,12 @@ struct resource *dev_request_mem_resource(struct device *dev, int num);
 struct resource *dev_request_mem_resource_by_name(struct device *dev,
 						  const char *name);
 
-void __iomem *dev_platform_get_and_ioremap_resource(struct device *dev,
-						    int num,
-						    struct resource **out_res);
+/* Like dev_request_mem_resource(), but released when the device goes away */
+struct resource *devm_request_mem_resource(struct device *dev, int num);
+
+void __iomem *devm_platform_get_and_ioremap_resource(struct device *dev,
+						     int num,
+						     struct resource **out_res);
 
 /*
  * exlusively request register base 'num' for a device

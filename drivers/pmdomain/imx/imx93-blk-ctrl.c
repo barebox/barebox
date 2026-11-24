@@ -208,7 +208,7 @@ static int imx93_blk_ctrl_probe(struct device *dev)
 
 	bc_data = of_device_get_match_data(dev);
 
-	base = dev_platform_ioremap_resource(dev, 0);
+	base = devm_platform_ioremap_resource(dev, 0);
 	if (IS_ERR(base))
 		return PTR_ERR(base);
 

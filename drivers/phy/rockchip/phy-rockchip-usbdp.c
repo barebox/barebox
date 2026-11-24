@@ -1053,7 +1053,7 @@ static int rk_udphy_probe(struct device *dev)
 	if (!udphy->cfgs)
 		return dev_err_probe(dev, -EINVAL, "missing match data\n");
 
-	base = dev_platform_get_and_ioremap_resource(dev, 0, &res);
+	base = devm_platform_get_and_ioremap_resource(dev, 0, &res);
 	if (IS_ERR(base))
 		return PTR_ERR(base);
 

@@ -698,7 +698,7 @@ static int inno_dsidphy_probe(struct device *dev)
 	inno->pdata = device_get_match_data(inno->dev);
 	dev_set_drvdata(dev, inno);
 
-	inno->phy_base = dev_platform_ioremap_resource(dev, 0);
+	inno->phy_base = devm_platform_ioremap_resource(dev, 0);
 	if (IS_ERR(inno->phy_base))
 		return PTR_ERR(inno->phy_base);
 

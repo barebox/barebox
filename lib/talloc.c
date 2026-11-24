@@ -12,6 +12,9 @@
  * |  child  | sibling | sibling | chunk
  * +---------+---------+---------+--------···
  *
+ * Destructors are leaf chunks below the chunk they belong to, marked by
+ * a child slot pointing at talloc_destructor_mark.
+ *
  * Thus, a talloc hierarchy tree would look like this:
  *
  *   NULL <-- chunk --> NULL
@@ -28,17 +31,28 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 #include <linux/bug.h>
 #include <linux/export.h>
 #include <linux/container_of.h>
 #include <asm/sections.h>
 #include "talloc.h"
 
-// TODO difference between set_parent and steal?
 // TODO use a bit from TLSF for extra safety to differentiate talloc
-// TODO allow leaf nodes (that have no children to be destructors!!)
 #define  is_root(hdr) (!(hdr)->prev)
 #define is_first(hdr) ((hdr)->prev->next != (hdr))
+/* A chunk is unlinked while being freed, so next can mark it */
+#define is_freeing(hdr) ((hdr)->next == (hdr))
+
+struct talloc_destructor {
+	void (*fn)(void *);
+	void *data;
+};
+
+/* Leaves have no children, so this in the child slot marks a destructor */
+static struct talloc talloc_destructor_mark;
+
+#define is_destructor(hdr) ((hdr)->child == &talloc_destructor_mark)
 
 static inline void *hdr2mem(struct talloc *hdr)
 {
@@ -69,7 +83,7 @@ static void *talloc_ctx_init(struct talloc *hdr, const void *parent)
 	memset(hdr, 0, sizeof(*hdr));
 
 	mem = hdr2mem(hdr);
-	talloc_steal(parent, mem);
+	mem_set_parent(hdr, mem2hdr(parent));
 	return mem;
 }
 
@@ -230,22 +244,29 @@ void *talloc_realloc_size(const void *parent, void *mem, size_t size)
 EXPORT_SYMBOL(talloc_realloc_size);
 
 /**
- * __tfree() - Deallocate all the descendants of given parent recursively.
+ * __talloc_free() - Deallocate a memory chunk and all its descendants.
  *
  * @hdr: pointer to previously talloc'ed memory chunk.
  */
-static void __tfree(struct talloc *hdr)
+static void __talloc_free(struct talloc *hdr)
 {
-	if (ZERO_OR_NULL_PTR(hdr))
+	if (is_destructor(hdr)) {
+		struct talloc_destructor *d = hdr2mem(hdr);
+
+		d->fn(d->data);
+
+		mem_set_parent(hdr, NULL);
+		free(hdr);
 		return;
+	}
 
-	/* Fail if the tree hierarchy has cycles. */
+	/* Mark it, so destructors can't free it again */
+	mem_set_parent(hdr, NULL);
+	hdr->next = hdr;
 
-	ASSERT(hdr->prev);
-	hdr->prev = NULL;
+	while (hdr->child)
+		__talloc_free(hdr->child);
 
-	__tfree(hdr->child);
-	__tfree(hdr->next);
 	free(hdr);
 }
 
@@ -253,21 +274,103 @@ static void __tfree(struct talloc *hdr)
  * talloc_free() - Deallocate a talloc'ed memory chunk and all the chunks depending on it.
  *
  * @mem: pointer to previously talloc'ed memory chunk.
+ *
+ * Runs the destructors of the chunk and its descendants. Does nothing
+ * if the chunk is already being freed.
  */
 void talloc_free(void *mem)
 {
 	struct talloc *hdr = mem2hdr(mem);
 
-	if (ZERO_OR_NULL_PTR(mem))
+	if (ZERO_OR_NULL_PTR(mem) || is_freeing(hdr))
 		return;
 
-	talloc_steal(NULL, mem);
-
-	__tfree(hdr->child);
-
-	free(hdr);
+	__talloc_free(hdr);
 }
 EXPORT_SYMBOL(talloc_free);
+
+/**
+ * talloc_add_destructor() - Add function to run when memory chunk is freed
+ *
+ * @parent: pointer to previously talloc'ed memory chunk.
+ * @fn: function to call with @data as argument when @parent is freed.
+ * @data: argument to pass to @fn.
+ *
+ * Any number of these can be added. They run in reverse order of adding,
+ * interleaved with the freeing of @parent's children.
+ *
+ * Return: 0 on success or a negative error code.
+ */
+int talloc_add_destructor(const void *parent, void (*fn)(void *), void *data)
+{
+	struct talloc_destructor *d;
+
+	if (ZERO_OR_NULL_PTR(parent))
+		return -EINVAL;
+
+	d = talloc_size(parent, sizeof(*d));
+	if (!d)
+		return -ENOMEM;
+
+	mem2hdr(d)->child = &talloc_destructor_mark;
+	d->fn = fn;
+	d->data = data;
+
+	return 0;
+}
+EXPORT_SYMBOL(talloc_add_destructor);
+
+/*
+ * Like __talloc_free(), but children are parked in @kept instead of being
+ * freed. @hdr and @kept are marked, so destructors can't free them.
+ */
+static void talloc_run_child_destructors(struct talloc *hdr)
+{
+	struct talloc kept = {};
+
+	kept.next = &kept;
+	hdr->next = hdr;
+
+	while (hdr->child) {
+		struct talloc *child = hdr->child;
+
+		if (is_destructor(child)) {
+			__talloc_free(child);
+			continue;
+		}
+
+		mem_set_parent(child, NULL);
+		talloc_run_child_destructors(child);
+		mem_set_parent(child, &kept);
+	}
+
+	while (kept.child)
+		mem_set_parent(kept.child, hdr);
+}
+
+/**
+ * talloc_run_destructors() - Run destructors without freeing any memory
+ *
+ * @mem: pointer to previously talloc'ed memory chunk without parent.
+ *
+ * Runs the destructors of @mem and its descendants in the order
+ * talloc_free() would and drops them, but keeps all chunks.
+ */
+void talloc_run_destructors(void *mem)
+{
+	struct talloc *hdr = mem2hdr(mem);
+
+	if (ZERO_OR_NULL_PTR(mem) || is_freeing(hdr))
+		return;
+
+	/* A destructor could free the parent and @mem along with it */
+	if (WARN_ON(!is_root(hdr)))
+		return;
+
+	talloc_run_child_destructors(hdr);
+	hdr->next = NULL;
+}
+EXPORT_SYMBOL(talloc_run_destructors);
 
 /**
  * talloc_free_const() - call talloc_free, unless read/only memory
@@ -335,68 +438,6 @@ void mem_set_parent(struct talloc *hdr, struct talloc *parent_hdr)
 }
 EXPORT_SYMBOL(mem_set_parent);
 
-/**
- * talloc_steal() - Reparent talloc'ed memory chunk
- *
- * @parent: pointer to previously talloc'ed memory chunk from which this
- *          chunk depends, or NULL.
- * @mem: pointer to previously talloc'ed memory chunk.
- *
- * Change the parent of a talloc'ed memory chunk. This will affect the
- * dependencies of the entire subtree rooted at the given chunk.
- */
-void talloc_steal(const void *parent, void *mem)
-{
-	struct talloc *hdr = mem2hdr(mem);
-	struct talloc *parent_hdr = mem2hdr(parent);
-
-	mem_set_parent(hdr, parent_hdr);
-}
-EXPORT_SYMBOL(talloc_steal);
-
-/**
- * talloc_steal_children() - Remove a talloc'ed memory chunk from the dependency tree
- *
- * @parent: pointer to previously talloc'ed memory chunk from which this
- *          chunk's children will depend, or NULL.
- * @mem: pointer to previously talloc'ed memory chunk.
- *
- * Removing a talloc'ed memory chunk from the dependency tree takes care of its
- * children (they will depend on the specified parent).
- */
-void talloc_steal_children(const void *parent, void *mem)
-{
-	struct talloc *hdr = mem2hdr(mem);
-	struct talloc *parent_hdr = mem2hdr(parent);
-
-	if (ZERO_OR_NULL_PTR(hdr))
-		return;
-
-	talloc_steal(NULL, mem);
-
-	if (!hdr->child)
-		return;
-
-	if (parent_hdr) {
-		/* Insert mem children in front of the list of parent children. */
-		if (parent_hdr->child) {
-			struct talloc *last = hdr->child;
-
-			while (last->next)
-				last = last->next;
-
-			parent_hdr->child->prev = last;
-			last->next = parent_hdr->child;
-		}
-
-		parent_hdr->child = hdr->child;
-	}
-
-	hdr->child->parent = parent_hdr;
-	hdr->child = NULL;
-}
-EXPORT_SYMBOL(talloc_steal_children);
-
 size_t talloc_total_blocks(const void *mem)
 {
 	struct talloc *hdr = mem2hdr(mem);
@@ -407,8 +448,10 @@ size_t talloc_total_blocks(const void *mem)
 
 	nblocks++;
 
-	for (hdr = hdr->child; hdr; hdr = hdr->next)
-		nblocks++;
+	for (hdr = hdr->child; hdr; hdr = hdr->next) {
+		if (!is_destructor(hdr))
+			nblocks++;
+	}
 
 	return nblocks;
 }

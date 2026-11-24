@@ -352,7 +352,7 @@ static int pwm_imx_tpm_probe(struct device *dev)
 	u32 val;
 	int i;
 
-	base = dev_platform_ioremap_resource(dev, 0);
+	base = devm_platform_ioremap_resource(dev, 0);
 	if (IS_ERR(base))
 		return PTR_ERR(base);
 

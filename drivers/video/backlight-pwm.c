@@ -127,9 +127,9 @@ static int pwm_backlight_parse_dt(struct device *dev,
 
 	/* read brightness levels from DT property */
 	if (length > 0) {
-		size_t size = sizeof(*pwm_backlight->levels) * length;
-
-		pwm_backlight->levels = xzalloc(size);
+		pwm_backlight->levels = devm_kcalloc(dev, length,
+						     sizeof(*pwm_backlight->levels),
+						     GFP_KERNEL);
 
 		ret = of_property_read_u32_array(node, "brightness-levels",
 						 pwm_backlight->levels,

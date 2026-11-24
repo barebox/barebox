@@ -1032,7 +1032,7 @@ static int dw_mipi_dsi_rockchip_probe(struct device *dev)
 	if (!dsi)
 		return -ENOMEM;
 
-	dsi->base = dev_platform_get_and_ioremap_resource(dev, 0, &res);
+	dsi->base = devm_platform_get_and_ioremap_resource(dev, 0, &res);
 	if (IS_ERR(dsi->base)) {
 		DRM_DEV_ERROR(dev, "Unable to get dsi registers\n");
 		return PTR_ERR(dsi->base);

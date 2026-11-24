@@ -798,7 +798,7 @@ static int fsl_qspi_probe(struct device *dev)
 		goto err_put_ctrl;
 	}
 
-	q->ahb_addr = dev_platform_get_and_ioremap_resource(dev, 1, &res);
+	q->ahb_addr = devm_platform_get_and_ioremap_resource(dev, 1, &res);
 	if (IS_ERR(q->ahb_addr)) {
 		ret = PTR_ERR(q->ahb_addr);
 		goto err_put_ctrl;

@@ -109,7 +109,7 @@ static int dwc3_imx8mp_probe(struct device *dev)
 
 	dwc3_imx->dev = dev;
 
-	dwc3_imx->hsio_blk_base = dev_platform_ioremap_resource(dev, 0);
+	dwc3_imx->hsio_blk_base = devm_platform_ioremap_resource(dev, 0);
 	if (IS_ERR(dwc3_imx->hsio_blk_base))
 		return PTR_ERR(dwc3_imx->hsio_blk_base);
 

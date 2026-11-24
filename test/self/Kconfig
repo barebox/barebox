@@ -63,6 +63,7 @@ config SELFTEST_ENABLE_ALL
 	select SELFTEST_LVM if BLOCK
 	select SELFTEST_UBI if MTD_UBI && MTD_WRITE
 	select SELFTEST_TALLOC
+	select SELFTEST_DEVRES
 	select SELFTEST_BLSPEC if BLSPEC && DEFAULT_ENVIRONMENT
 	select SELFTEST_PINCTRL if PINCTRL
 	help
@@ -97,6 +98,11 @@ config SELFTEST_TALLOC
 	bool "talloc() selftest"
 	help
 	  Tests barebox talloc allocator
+
+config SELFTEST_DEVRES
+	bool "devm_ selftest"
+	help
+	  Tests device-managed resources
 
 config SELFTEST_PRINTF
 	bool "printf selftest"

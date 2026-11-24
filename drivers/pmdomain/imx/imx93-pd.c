@@ -93,7 +93,7 @@ static int imx93_pd_probe(struct device *dev)
 	if (!domain)
 		return -ENOMEM;
 
-	domain->addr = dev_platform_ioremap_resource(dev, 0);
+	domain->addr = devm_platform_ioremap_resource(dev, 0);
 	if (IS_ERR(domain->addr))
 		return PTR_ERR(domain->addr);
 

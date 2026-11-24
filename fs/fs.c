@@ -233,6 +233,7 @@ static int filename_lookup(int dirfd, struct filename *name, unsigned flags,
 			   struct path *path);;
 static struct filename *getname(const char *filename);
 static void path_put(const struct path *path);
+static void automount_remove_sb(struct super_block *sb);
 
 LIST_HEAD(fs_device_list);
 
@@ -815,6 +816,12 @@ static int fs_probe(struct device *dev)
 	return 0;
 }
 
+/* we have no dentry hash, d_lookup() searches the parent's d_subdirs */
+static inline bool d_unhashed(const struct dentry *dentry)
+{
+	return !IS_ROOT(dentry) && list_empty(&dentry->d_child);
+}
+
 static void dentry_kill(struct dentry *dentry)
 {
 	if (dentry->d_inode)
@@ -892,6 +899,7 @@ static void fs_remove(struct device *dev)
 	if (fsdev->vfsmount.mountpoint)
 		fsdev->vfsmount.mountpoint->d_flags &= ~DCACHE_MOUNTED;
 
+	automount_remove_sb(sb);
 	dentry_delete_subtree(sb, sb->s_root);
 
 	list_for_each_entry_safe(inode, tmp, &sb->s_inodes, i_sb_list)
@@ -1504,6 +1512,10 @@ void dput(struct dentry *dentry)
 		return;
 
 	dentry->d_count--;
+
+	/* nothing can look up a dropped dentry, so free it once unused */
+	if (!dentry->d_count && d_unhashed(dentry))
+		dentry_kill(dentry);
 }
 
 struct dentry *dget(struct dentry *dentry)
@@ -1743,6 +1755,13 @@ static void dentry_unlink_inode(struct dentry * dentry)
 void d_delete(struct dentry * dentry)
 {
 	dentry_unlink_inode(dentry);
+
+	/* unused negative children would keep a removed directory alive */
+	d_invalidate(dentry);
+
+	/* still in use, e.g. as cwd: unhash, so the name gets a new dentry */
+	if (dentry->d_count > 1)
+		list_del_init(&dentry->d_child);
 }
 
 /*
@@ -1827,6 +1846,7 @@ static inline void put_link(struct nameidata *nd)
 }
 
 static int automount_mount(struct dentry *dentry);
+static void automount_remove_dentry(struct dentry *dentry);
 
 static void path_put_conditional(struct path *path, struct nameidata *nd)
 {
@@ -2007,6 +2027,7 @@ static void follow_mount(struct path *path)
 		if (!mounted)
 			break;
 		dput(path->dentry);
+		mntput(path->mnt);
 		path->mnt = mounted;
 		path->dentry = dget(mounted->mnt_root);
 	}
@@ -2044,8 +2065,16 @@ static int follow_dotdot(struct nameidata *nd)
 static inline int handle_dots(struct nameidata *nd, int type)
 {
 	if (type == LAST_DOTDOT) {
-		return follow_dotdot(nd);
+		int ret = follow_dotdot(nd);
+
+		if (ret)
+			return ret;
 	}
+
+	/* a removed directory, e.g. "." in a removed cwd */
+	if (unlikely(d_is_negative(nd->path.dentry)))
+		return -ENOENT;
+
 	return 0;
 }
 
@@ -2389,8 +2418,10 @@ static const char *path_init(int dirfd, struct nameidata *nd, unsigned flags)
 		path_get(&nd->path);
 		follow_mount(&nd->path);
 
-		if (*s == '/')
-			nd->path.dentry = nd->path.mnt->mnt_root;
+		if (*s == '/') {
+			dput(nd->path.dentry);
+			nd->path.dentry = dget(nd->path.mnt->mnt_root);
+		}
 		if (chroot) {
 			nd->d_root = nd->path.mnt->mnt_root;
 			nd->mnt_root = nd->path.mnt;
@@ -2628,8 +2659,10 @@ static int vfs_rmdir(struct inode *dir, struct dentry *dentry)
 out:
 	dput(dentry);
 
-	if (!error)
+	if (!error) {
+		automount_remove_dentry(dentry);
 		d_delete(dentry);
+	}
 
 	return error;
 }
@@ -3577,23 +3610,36 @@ struct automount {
 
 static LIST_HEAD(automount_list);
 
-static void automount_remove_dentry(struct dentry *dentry)
+static void automount_free(struct automount *am)
 {
-	struct automount *am;
-
-	list_for_each_entry(am, &automount_list, list) {
-		if (dentry == am->dentry)
-			goto found;
-	}
-
-	return;
-found:
 	am->dentry->d_flags &= ~DCACHE_NEED_AUTOMOUNT;
 	list_del(&am->list);
 	dput(am->dentry);
 	free(am->path);
 	free(am->cmd);
 	free(am);
+}
+
+static void automount_remove_dentry(struct dentry *dentry)
+{
+	struct automount *am;
+
+	list_for_each_entry(am, &automount_list, list) {
+		if (dentry == am->dentry) {
+			automount_free(am);
+			return;
+		}
+	}
+}
+
+static void automount_remove_sb(struct super_block *sb)
+{
+	struct automount *am, *tmp;
+
+	list_for_each_entry_safe(am, tmp, &automount_list, list) {
+		if (am->dentry->d_sb == sb)
+			automount_free(am);
+	}
 }
 
 void automount_remove(const char *pathname)
@@ -3726,6 +3772,14 @@ static int automount_mount(struct dentry *dentry)
 BAREBOX_MAGICVAR(automount_path, "mountpath passed to automount scripts");
 
 #else
+static void automount_remove_dentry(struct dentry *dentry)
+{
+}
+
+static void automount_remove_sb(struct super_block *sb)
+{
+}
+
 static int automount_mount(struct dentry *dentry)
 {
 	return 0;

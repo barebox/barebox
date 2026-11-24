@@ -449,14 +449,10 @@ static int fuzz_fat(struct block_device *ramdisk)
 	FATFS fat = {};
 	struct fat_priv priv = {};
 	FF_DIR dir;
-	FILINFO finfo;
 	FIL fil;
 	BYTE buf[512];
 	UINT br;
 	int ret, i;
-#ifdef CONFIG_FS_FAT_LFN
-	char lfname[256];
-#endif
 
 	priv.cdev = &ramdisk->cdev;
 	fat.userdata = &priv;
@@ -475,10 +471,11 @@ static int fuzz_fat(struct block_device *ramdisk)
 	 * directory or a cyclic cluster chain.
 	 */
 	for (i = 0; i < 64; i++) {
-		memset(&finfo, 0, sizeof(finfo));
+		FILINFO finfo = {};
 
 #ifdef CONFIG_FS_FAT_LFN
-		/* FILINFO only has the fields for long names with LFN */
+		char lfname[256];
+
 		finfo.lfname = lfname;
 		finfo.lfsize = sizeof(lfname);
 #endif

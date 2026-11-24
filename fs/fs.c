@@ -510,6 +510,19 @@ static ssize_t __write(struct file *f, const void *buf, size_t count)
 	if (fsdrv != ramfs_driver)
 		assert_command_context();
 
+	/* e.g. an error code passed as count, see rw_verify_area() in Linux */
+	if ((ssize_t)count < 0) {
+		ret = -EINVAL;
+		goto out;
+	}
+
+	/* pwrite() can place the position anywhere */
+	if (i_size_is_bound(f->f_inode) &&
+	    f->f_pos > MAX_LFS_FILESIZE - (loff_t)count) {
+		ret = -EINVAL;
+		goto out;
+	}
+
 	if (i_size_is_bound(f->f_inode) && f->f_pos + count > f->f_size) {
 		ret = fsdev_truncate(f, f->f_pos + count);
 		if (ret) {

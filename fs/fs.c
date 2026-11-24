@@ -3515,7 +3515,6 @@ err_no_driver:
 err_register:
 	fs_remove(&fsdev->dev);
 	free(fsdev);
-	mntput(path.mnt);
 out:
 	path_put(&path);
 

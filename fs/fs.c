@@ -501,6 +501,7 @@ EXPORT_SYMBOL(read);
 static ssize_t __write(struct file *f, const void *buf, size_t count)
 {
 	struct fs_driver *fsdrv;
+	loff_t size;
 	int ret;
 
 	fsdrv = f->fsdev->driver;
@@ -526,6 +527,8 @@ static ssize_t __write(struct file *f, const void *buf, size_t count)
 		goto out;
 	}
 
+	size = f->f_size;
+
 	if (i_size_is_bound(f->f_inode) && f->f_pos + count > f->f_size) {
 		ret = fsdev_truncate(f, f->f_pos + count);
 		if (ret) {
@@ -540,6 +543,10 @@ static ssize_t __write(struct file *f, const void *buf, size_t count)
 	}
 
 	ret = f->f_inode->i_fop->write(f, buf, count);
+
+	/* don't leave the file grown when the data was refused */
+	if (ret < 0 && f->f_size > size && !fsdev_truncate(f, size))
+		f->f_size = size;
 out:
 	return errno_set(ret);
 }

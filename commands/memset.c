@@ -54,7 +54,7 @@ static int do_memset(int argc, char *argv[])
 
 		now = min((loff_t)RW_BUF_SIZE, n);
 
-		ret = write(fd, buf, now);
+		ret = write_full(fd, buf, now);
 		if (ret < 0) {
 			perror("write");
 			ret = 1;

@@ -85,6 +85,11 @@ static int do_mem_mw(int argc, char *argv[])
 			perror("write");
 			break;
 		}
+		if (ret != mode >> O_RWSIZE_SHIFT) {
+			printf("short write\n");
+			ret = 1;
+			break;
+		}
 		ret = 0;
 		optind++;
 	}

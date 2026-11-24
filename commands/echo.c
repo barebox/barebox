@@ -9,39 +9,57 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <libbb.h>
+#include <libfile.h>
 
-static void echo_dputc(int fd, char c, bool wide)
+/* the console can't fail, but a file write may be refused */
+static int echo_write(int fd, const void *buf, size_t len)
+{
+	int ret = write_full(fd, buf, len);
+
+	return ret < 0 ? ret : 0;
+}
+
+static int echo_dputc(int fd, char c, bool wide)
 {
 	wchar_t wc;
 	int n;
 
-	if (!wide || fd == 1 || fd == 2) {
+	if (fd == 1 || fd == 2) {
 		dputc(fd, c);
-		return;
+		return 0;
 	}
+
+	if (!wide)
+		return echo_write(fd, &c, 1);
 
 	n = mbtowc(&wc, &c, 1);
 	if (n < 0)
-		return;
+		return 0;
 
-	write(fd, &wc, sizeof(wchar_t));
+	return echo_write(fd, &wc, sizeof(wchar_t));
 }
 
-static void echo_dputs(int fd, const char *s, bool wide)
+static int echo_dputs(int fd, const char *s, bool wide)
 {
 	wchar_t *ws;
+	int ret;
 
-	if (!wide || fd == 1 || fd == 2) {
+	if (fd == 1 || fd == 2) {
 		dputs(fd, s);
-		return;
+		return 0;
 	}
+
+	if (!wide)
+		return echo_write(fd, s, strlen(s));
 
 	ws = strdup_char_to_wchar(s);
 	if (!ws)
-		return;
+		return -ENOMEM;
 
-	write(fd, ws, wcslen(ws) * sizeof(wchar_t));
+	ret = echo_write(fd, ws, wcslen(ws) * sizeof(wchar_t));
 	free(ws);
+
+	return ret;
 }
 
 static int do_echo(int argc, char *argv[])
@@ -52,6 +70,7 @@ static int do_echo(int argc, char *argv[])
 	int oflags = O_WRONLY | O_CREAT;
 	char str[CONFIG_CBSIZE];
 	int process_escape = 0;
+	int ret = 0;
 	bool wide = false;
 
 	if (IS_ENABLED(CONFIG_PRINTF_WCHAR) && *argv[0] == 'w')
@@ -103,11 +122,11 @@ exit_parse:
 		}
 	}
 
-	for (i = optind; i < argc; i++) {
+	for (i = optind; i < argc && !ret; i++) {
 		const char *out;
 
 		if (i > optind)
-			echo_dputc(fd, ' ', wide);
+			ret = echo_dputc(fd, ' ', wide);
 		if (process_escape) {
 			process_escape_sequence(argv[i], str, CONFIG_CBSIZE);
 			out = str;
@@ -115,14 +134,20 @@ exit_parse:
 			out = argv[i];
 		}
 
-		echo_dputs(fd, out, wide);
+		if (!ret)
+			ret = echo_dputs(fd, out, wide);
 	}
 
-	if (newline)
-		echo_dputc(fd, '\n', wide);
+	if (newline && !ret)
+		ret = echo_dputc(fd, '\n', wide);
 
 	if (file)
 		close(fd);
+
+	if (ret) {
+		printf("%s: %pe\n", file, ERR_PTR(ret));
+		return 1;
+	}
 
 	return 0;
 

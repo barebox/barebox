@@ -1266,12 +1266,9 @@ const char *cdev_mount_default(struct cdev *cdev, const char *fsoptions)
 	newpath = basprintf("/mnt/%s", cdev->name);
 
 	if (path) {
-		if (strcmp(newpath, path)) {
-			free(newpath);
-			return ERR_PTR(-EBUSY);
-		} else {
-			return path;
-		}
+		ret = strcmp(newpath, path);
+		free(newpath);
+		return ret ? ERR_PTR(-EBUSY) : path;
 	}
 
 	make_directory(newpath);
@@ -1281,11 +1278,10 @@ const char *cdev_mount_default(struct cdev *cdev, const char *fsoptions)
 	ret = mount(devpath, NULL, newpath, fsoptions);
 
 	free(devpath);
+	free(newpath);
 
-	if (ret) {
-		free(newpath);
+	if (ret)
 		return ERR_PTR(ret);
-	}
 
 	return cdev_get_mount_path(cdev) ?: ERR_PTR(-ENODEV);
 }

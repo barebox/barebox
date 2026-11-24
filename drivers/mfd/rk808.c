@@ -42,6 +42,12 @@ static const struct regmap_config rk805_regmap_config = {
 	.max_register = RK805_OFF_SOURCE_REG,
 };
 
+static const struct regmap_config rk806_regmap_config = {
+	.reg_bits = 8,
+	.val_bits = 8,
+	.max_register = RK806_BUCK_RSERVE_REG5,
+};
+
 static const struct regmap_config rk808_regmap_config = {
 	.reg_bits = 8,
 	.val_bits = 8,
@@ -234,6 +240,10 @@ static void rk808_poweroff(struct poweroff_handler *handler,
 		reg = RK805_DEV_CTRL_REG;
 		bit = DEV_OFF;
 		break;
+	case RK806_ID:
+		reg = RK806_SYS_CFG3;
+		bit = DEV_OFF;
+		break;
 	case RK808_ID:
 		reg = RK808_DEVCTRL_REG,
 		bit = DEV_OFF_RST;
@@ -368,6 +378,9 @@ static int rk808_probe(struct device *dev)
 	    of_device_is_compatible(np, "rockchip,rk809")) {
 		pmic_id_msb = RK817_ID_MSB;
 		pmic_id_lsb = RK817_ID_LSB;
+	} else if (of_device_is_compatible(np, "rockchip,rk806")) {
+		pmic_id_msb = RK806_CHIP_NAME;
+		pmic_id_lsb = RK806_CHIP_VER;
 	} else {
 		pmic_id_msb = RK808_ID_MSB;
 		pmic_id_lsb = RK808_ID_LSB;
@@ -377,14 +390,14 @@ static int rk808_probe(struct device *dev)
 	msb = i2c_smbus_read_byte_data(client, pmic_id_msb);
 	if (msb < 0) {
 		dev_err(dev, "failed to read the chip id at 0x%x\n",
-			RK808_ID_MSB);
+			pmic_id_msb);
 		return msb;
 	}
 
 	lsb = i2c_smbus_read_byte_data(client, pmic_id_lsb);
 	if (lsb < 0) {
 		dev_err(dev, "failed to read the chip id at 0x%x\n",
-			RK808_ID_LSB);
+			pmic_id_lsb);
 		return lsb;
 	}
 
@@ -394,6 +407,9 @@ static int rk808_probe(struct device *dev)
 	switch (variant) {
 	case RK805_ID:
 		regmap_cfg = &rk805_regmap_config;
+		break;
+	case RK806_ID:
+		regmap_cfg = &rk806_regmap_config;
 		break;
 	case RK808_ID:
 		regmap_cfg = &rk808_regmap_config;
@@ -490,6 +506,7 @@ static int rk808_probe_spi(struct device *dev)
 
 static const struct of_device_id rk808_of_match[] = {
 	{ .compatible = "rockchip,rk805" },
+	{ .compatible = "rockchip,rk806" },
 	{ .compatible = "rockchip,rk808" },
 	{ .compatible = "rockchip,rk809" },
 	{ .compatible = "rockchip,rk817" },

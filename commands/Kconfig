@@ -2566,6 +2566,8 @@ config CMD_FIRMWARELOAD
 
 config CMD_KALLSYMS
 	depends on KALLSYMS
+	imply KALLSYMS_ALL
+	imply KALLSYMS_LOOKUP_NAME_BSEARCH
 	bool
 	prompt "kallsyms"
 	help

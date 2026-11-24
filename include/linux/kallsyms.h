@@ -19,10 +19,13 @@
 			(KSYM_NAME_LEN - 1) + \
 			2*(BITS_PER_LONG*3/10) + (MODULE_NAME_LEN - 1) + 1)
 
-/* barebox always generates kallsyms with --all-symbols */
 static inline int is_ksym_addr(unsigned long addr)
 {
-	return addr >= (unsigned long)_stext && addr < (unsigned long)_end;
+	if (IS_ENABLED(CONFIG_KALLSYMS_ALL))
+		return addr >= (unsigned long)_stext &&
+		       addr < (unsigned long)_end;
+
+	return addr >= (unsigned long)_stext && addr < (unsigned long)_etext;
 }
 
 #ifdef CONFIG_KALLSYMS

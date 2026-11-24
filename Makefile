@@ -1153,10 +1153,19 @@ endif
 
 kallsyms.o := .tmp_kallsyms$(last_kallsyms).o
 
+# Only the binary search references the table, so without it,
+# --gc-sections must drop it
+kallsyms_check_no_seqs := $(and $(CONFIG_LD_DEAD_CODE_DATA_ELIMINATION), \
+				$(if $(CONFIG_KALLSYMS_LOOKUP_NAME_BSEARCH),,y))
+
 define verify_kallsyms
 	$(Q)cmp -s System.map .tmp_kallsyms$(last_kallsyms).S.syms ||         \
 		(echo >&2 Inconsistent kallsyms data;                        \
 		 rm .tmp_kallsyms* ; false )
+	$(if $(kallsyms_check_no_seqs),                                        \
+	$(Q)! grep -q ' kallsyms_seqs_of_names$$' System.map ||               \
+		(echo >&2 kallsyms_seqs_of_names linked in without            \
+		 CONFIG_KALLSYMS_LOOKUP_NAME_BSEARCH; false ))
 endef
 
 # Update barebox version before link
@@ -1176,7 +1185,10 @@ quiet_cmd_kallsyms_as_o_S = AS      $@
       cmd_kallsyms_as_o_S = $(CC) $(kallsyms_a_flags) -c -o $@ $<
 
 # barebox is relocated at runtime, so always use --pc-relative
-kallsyms_opts := --all-symbols --pc-relative
+kallsyms_opts := --pc-relative
+ifdef CONFIG_KALLSYMS_ALL
+kallsyms_opts += --all-symbols
+endif
 
 # Generate .S file with all barebox symbols, as filtered by mksysmap
 quiet_cmd_kallsyms = KSYM    $@

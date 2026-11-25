@@ -43,6 +43,20 @@ struct efi_partition {
 
 static const int force_gpt = IS_ENABLED(CONFIG_PARTITION_DISK_EFI_GPT_NO_FORCE);
 
+static bool gpt_fix_messages_suppressed;
+
+/**
+ * gpt_suppress_fix_messages() - don't ask for GPTs to be fixed
+ *
+ * For platforms whose boot firmware overwrites the primary GPT: report the
+ * fallback to the alternate GPT at debug level only and drop the hint how to
+ * repair it. global.system.gpt_refresh still repairs GPTs.
+ */
+void gpt_suppress_fix_messages(void)
+{
+	gpt_fix_messages_suppressed = true;
+}
+
 struct gpt_refresh {
 	struct block_device *blk;
 	struct list_head list;
@@ -485,6 +499,8 @@ compare_gpts(struct block_device *blk, gpt_header *pgpt, gpt_header *agpt,
 
 	if (error_found) {
 		add_gpt_refresh(blk);
+		if (gpt_fix_messages_suppressed)
+			return;
 		if (!IS_ENABLED(CONFIG_PARTITION_DISK_EFI_REFRESH))
 			dev_info(dev, "GPT: will repair later if global.system.gpt_refresh=1\n");
 		else
@@ -557,7 +573,10 @@ static int find_valid_gpt(struct efi_partition_desc *epd, void *buf)
 		epd->ptes = aptes;
 		free(pgpt);
 		free(pptes);
-		dev_warn(blk->dev, "Primary GPT is invalid, using alternate GPT.\n");
+		if (gpt_fix_messages_suppressed)
+			dev_dbg(blk->dev, "Primary GPT is invalid, using alternate GPT.\n");
+		else
+			dev_warn(blk->dev, "Primary GPT is invalid, using alternate GPT.\n");
 		return 0;
 	}
 

@@ -9,6 +9,7 @@
 #ifdef CONFIG_COMMON_CLK
 
 #include <linux/clk.h>
+#include <linux/device.h>
 
 struct clk_div_table;
 
@@ -78,6 +79,18 @@ int divider_determine_rate(struct clk_hw *hw, struct clk_rate_request *req,
 int divider_ro_determine_rate(struct clk_hw *hw, struct clk_rate_request *req,
 			      const struct clk_div_table *table, u8 width,
 			      unsigned long flags, unsigned int val);
+
+static inline struct device *clk_hw_get_dev(const struct clk_hw *hw)
+{
+	return hw->clk.dev;
+}
+
+static inline struct device_node *clk_hw_get_of_node(const struct clk_hw *hw)
+{
+	struct device *dev = clk_hw_get_dev(hw);
+
+	return dev ? dev_of_node(dev) : NULL;
+}
 
 #define CLK_HW_INIT(_name, _parent, _ops, _flags)		\
 	(&(struct clk_init_data) {				\

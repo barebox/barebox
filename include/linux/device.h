@@ -2,6 +2,7 @@
 #ifndef LINUX_DRIVER_H_
 #define LINUX_DRIVER_H_
 
+#include <linux/pagemap.h>
 #include <driver.h>
 #include <linux/slab.h>
 #include <linux/bug.h>
@@ -152,8 +153,13 @@ static inline void __iomem *devm_ioremap(struct device *dev,
 					 resource_size_t start,
 					 resource_size_t size)
 {
-	if (start)
-		remap_range((void *)start, size, MAP_UNCACHED);
+	if (start) {
+		resource_size_t base = PAGE_ALIGN_DOWN(start);
+
+		/* remap_range() takes whole pages, Linux' ioremap() any range */
+		remap_range((void *)base, PAGE_ALIGN(start - base + size),
+			    MAP_UNCACHED);
+	}
 
 	return IOMEM(start);
 }

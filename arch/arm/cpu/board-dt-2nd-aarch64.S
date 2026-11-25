@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 #include <linux/linkage.h>
+#include <asm/assembler.h>
 #include <asm/barebox-arm64.h>
 #include <asm/image.h>
 #include "efi-header-aarch64.S"
@@ -22,11 +23,9 @@ ENTRY("start_dt_2nd")
 	.int   .Lpe_header_offset  /* reserved (PE-COFF offset) */
 	.asciz "barebox"	   /* unused for now */
 2:
-	adr x1, _text - .
+	/* Stack inside the image until FDT /memory is decoded */
+	adr x1, __pbl_image_stack_top
 	mov sp, x1
-	/* Stack now grows into the 0x80000 image load offset specified
-	 * above. This is more than enough until FDT /memory is decoded.
-	 */
 	b dt_2nd_aarch64
 
 	__EFI_PE_HEADER

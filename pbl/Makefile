@@ -5,6 +5,7 @@
 #
 pbl-$(CONFIG_PBL_CONSTRUCTORS) += ctors.o
 pbl-y += misc.o
+pbl-y += image-stack.o
 pbl-y += string.o
 pbl-y += malloc.o
 pbl-y += sha.o

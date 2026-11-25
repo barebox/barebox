@@ -41,6 +41,9 @@ int pbl_barebox_verify(const void *compressed_start, unsigned int len,
 		       const void *hash, unsigned int hash_len);
 int pbl_load_fdt(const void *fdt, void *dest, int destsize);
 
+/* Top of a 4 KiB stack inside the image, see pbl/image-stack.S */
+extern char __pbl_image_stack_top[];
+
 #define PBL_MALLOC_SIZE SZ_128K
 
 void *pbl_malloc(int size);

@@ -396,6 +396,9 @@ int ftruncate(int fd, loff_t length)
 	if (length < 0)
 		return errno_set(-EINVAL);
 
+	if ((f->f_flags & O_ACCMODE) == O_RDONLY)
+		return errno_set(-EBADF);
+
 	if (!i_size_is_bound(f->f_inode))
 		return 0;
 
@@ -498,6 +501,7 @@ EXPORT_SYMBOL(read);
 static ssize_t __write(struct file *f, const void *buf, size_t count)
 {
 	struct fs_driver *fsdrv;
+	loff_t size;
 	int ret;
 
 	fsdrv = f->fsdev->driver;
@@ -509,6 +513,21 @@ static ssize_t __write(struct file *f, const void *buf, size_t count)
 
 	if (fsdrv != ramfs_driver)
 		assert_command_context();
+
+	/* e.g. an error code passed as count, see rw_verify_area() in Linux */
+	if ((ssize_t)count < 0) {
+		ret = -EINVAL;
+		goto out;
+	}
+
+	/* pwrite() can place the position anywhere */
+	if (i_size_is_bound(f->f_inode) &&
+	    f->f_pos > MAX_LFS_FILESIZE - (loff_t)count) {
+		ret = -EINVAL;
+		goto out;
+	}
+
+	size = f->f_size;
 
 	if (i_size_is_bound(f->f_inode) && f->f_pos + count > f->f_size) {
 		ret = fsdev_truncate(f, f->f_pos + count);
@@ -524,6 +543,10 @@ static ssize_t __write(struct file *f, const void *buf, size_t count)
 	}
 
 	ret = f->f_inode->i_fop->write(f, buf, count);
+
+	/* don't leave the file grown when the data was refused */
+	if (ret < 0 && f->f_size > size && !fsdev_truncate(f, size))
+		f->f_size = size;
 out:
 	return errno_set(ret);
 }
@@ -1111,6 +1134,13 @@ static int fillonedir(struct dir_context *ctx, const char *name, int namlen,
 		return 0;
 	}
 
+	if (!namlen || memchr(name, '/', namlen) ||
+	    memchr(name, '\0', namlen)) {
+		pr_warn("skipping directory entry '%.*s': invalid name\n",
+			namlen, name);
+		return 0;
+	}
+
 	entry = xzalloc(sizeof(*entry));
 	memcpy(entry->d.d_name, name, namlen);
 	list_add_tail(&entry->list, &rd->dir->entries);
@@ -1236,12 +1266,9 @@ const char *cdev_mount_default(struct cdev *cdev, const char *fsoptions)
 	newpath = basprintf("/mnt/%s", cdev->name);
 
 	if (path) {
-		if (strcmp(newpath, path)) {
-			free(newpath);
-			return ERR_PTR(-EBUSY);
-		} else {
-			return path;
-		}
+		ret = strcmp(newpath, path);
+		free(newpath);
+		return ret ? ERR_PTR(-EBUSY) : path;
 	}
 
 	make_directory(newpath);
@@ -1251,11 +1278,10 @@ const char *cdev_mount_default(struct cdev *cdev, const char *fsoptions)
 	ret = mount(devpath, NULL, newpath, fsoptions);
 
 	free(devpath);
+	free(newpath);
 
-	if (ret) {
-		free(newpath);
+	if (ret)
 		return ERR_PTR(ret);
-	}
 
 	return cdev_get_mount_path(cdev) ?: ERR_PTR(-ENODEV);
 }
@@ -3515,7 +3541,6 @@ err_no_driver:
 err_register:
 	fs_remove(&fsdev->dev);
 	free(fsdev);
-	mntput(path.mnt);
 out:
 	path_put(&path);
 

@@ -91,8 +91,10 @@ static int do_mount(int argc, char *argv[])
 		}
 
 		path = cdev_mount_default(cdev, fsoptions);
-		if (IS_ERR(path))
-			return PTR_ERR(path);
+		if (IS_ERR(path)) {
+			ret = PTR_ERR(path);
+			goto out;
+		}
 
 		printf("mounted /dev/%s on %s\n", devstr, path);
 

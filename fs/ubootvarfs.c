@@ -284,8 +284,12 @@ static int ubootvarfs_create(struct inode *dir, struct dentry *dentry,
 	struct ubootvarfs_var *var;
 	size_t len = strlen(dentry->name);
 
-	/* U-Boot splits a variable at its first '=' */
-	if (strchr(dentry->name, '='))
+	/*
+	 * U-Boot splits a variable at its first '=', drops blanks in front
+	 * of a name and skips a record starting with '#' as a comment
+	 */
+	if (strchr(dentry->name, '=') || dentry->name[0] == ' ' ||
+	    dentry->name[0] == '\t' || dentry->name[0] == '#')
 		return -EINVAL;
 
 	/*
@@ -434,6 +438,19 @@ static void ubootvarfs_free_vars(struct ubootvarfs_data *data)
 	}
 }
 
+/*
+ * Each variable is a file in the root directory, so its name must be a
+ * single path component: path lookup could never reach any other name,
+ * and directory walkers following e.g. "../.." would leave the mount.
+ */
+static bool ubootvarfs_name_valid(const char *name, size_t len)
+{
+	if (!len || memchr(name, '/', len))
+		return false;
+
+	return len > 2 || memcmp(name, "..", len);
+}
+
 static void ubootvarfs_parse(struct ubootvarfs_data *data, char *blob,
 			     size_t size)
 {
@@ -454,7 +471,13 @@ static void ubootvarfs_parse(struct ubootvarfs_data *data, char *blob,
 		}
 
 		sep = memchr(blob, '=', len);
-		if (sep && sep != blob) {
+		if (!sep) {
+			pr_err("No separator in data @ 0x%08tx. Skipped.\n",
+			       blob - start);
+		} else if (!ubootvarfs_name_valid(blob, sep - blob)) {
+			pr_err("Invalid variable name @ 0x%08tx. Skipped.\n",
+			       blob - start);
+		} else {
 			var = xmalloc(sizeof(*var));
 			var->name = blob;
 			var->end  = blob + len;
@@ -462,9 +485,6 @@ static void ubootvarfs_parse(struct ubootvarfs_data *data, char *blob,
 			var->name_len = sep - blob;
 
 			list_add_tail(&var->list, &data->var_list);
-		} else {
-			pr_err("No separator in data @ 0x%08tx. Skipped.\n",
-			       blob - start);
 		}
 
 		len++; /* account for '\0' */

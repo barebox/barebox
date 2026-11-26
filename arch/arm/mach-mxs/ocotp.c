@@ -157,6 +157,7 @@ static ssize_t mxs_ocotp_cdev_write(struct cdev *cdev, const void *buf, size_t c
 		mdelay(2);
 	}
 
+	ret = count;
 restore_system:
 	imx_set_vddio(old_vddio);
 	clk_set_rate(priv->clk, old_hclk);

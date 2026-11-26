@@ -41,6 +41,7 @@ static int do_memcpy(int argc, char *argv[])
 		r = read(sourcefd, buf, now);
 		if (r < 0) {
 			perror("read");
+			ret = 1;
 			goto out;
 		}
 
@@ -49,13 +50,16 @@ static int do_memcpy(int argc, char *argv[])
 
 		if (write_full(destfd, buf, r) < 0) {
 			perror("write");
+			ret = 1;
 			goto out;
 		}
 
 		count -= r;
 
-		if (ctrlc())
+		if (ctrlc()) {
+			ret = 1;
 			goto out;
+		}
 	}
 
 	if (count) {

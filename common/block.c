@@ -16,20 +16,22 @@
 #include <bootargs.h>
 #include <file-list.h>
 #include <linux/log2.h>
+#include <linux/bitmap.h>
 
 LIST_HEAD(block_device_list);
 EXPORT_SYMBOL(block_device_list);
+
+#define BUFSIZE (PAGE_SIZE * 16)
 
 /* a chunk of contiguous data */
 struct chunk {
 	void *data; /* data buffer */
 	sector_t block_start; /* first block in this chunk */
-	int dirty; /* need to write back to device */
+	/* blocks that need write back to device, relative to block_start */
+	DECLARE_BITMAP(dirty, BUFSIZE >> MIN_SECTOR_SHIFT);
 	int num; /* number of chunk, debugging only */
 	struct list_head list;
 };
-
-#define BUFSIZE (PAGE_SIZE * 16)
 
 static blkcnt_t writebuffer_io_nblocks(struct block_device *blk, struct chunk *chunk)
 {
@@ -67,23 +69,32 @@ int block_size_bits(struct device *dev, unsigned block_size)
 
 static int chunk_flush(struct block_device *blk, struct chunk *chunk)
 {
-	blkcnt_t len;
+	unsigned long start, end;
 	int ret;
-
-	if (!chunk->dirty)
-		return 0;
 
 	if (!blk->ops->write)
 		return 0;
 
-	len = writebuffer_io_nblocks(blk, chunk);
-	ret = blk->ops->write(blk, chunk->data, chunk->block_start, len);
-	if (ret < 0)
-		return ret;
+	/*
+	 * Write back only the blocks that were modified, one write per run
+	 * of them: the other blocks of the chunk may hold data, e.g. the
+	 * other copy of a redundant environment, that must not be rewritten
+	 * when it didn't change.
+	 */
+	for (start = find_first_bit(chunk->dirty, blk->rdbufsize);
+	     start < blk->rdbufsize;
+	     start = find_next_bit(chunk->dirty, blk->rdbufsize, end)) {
+		end = find_next_zero_bit(chunk->dirty, blk->rdbufsize, start);
 
-	blk_stats_record_write(blk, len);
+		ret = blk->ops->write(blk, chunk->data + (start << blk->blockbits),
+				      chunk->block_start + start, end - start);
+		if (ret < 0)
+			return ret;
 
-	chunk->dirty = 0;
+		blk_stats_record_write(blk, end - start);
+
+		bitmap_clear(chunk->dirty, start, end - start);
+	}
 
 	return 0;
 }
@@ -298,7 +309,7 @@ static ssize_t block_op_read(struct cdev *cdev, void *buf, size_t count,
 
 /*
  * Put data into a block. This only overwrites the data in the
- * cache and marks the corresponding chunk as dirty.
+ * cache and marks the block as dirty.
  */
 static int block_put(struct block_device *blk, const void *buf, sector_t block)
 {
@@ -315,7 +326,7 @@ static int block_put(struct block_device *blk, const void *buf, sector_t block)
 	memcpy(data, buf, 1 << blk->blockbits);
 
 	chunk = chunk_get_cached(blk, block);
-	chunk->dirty = 1;
+	set_bit(block - chunk->block_start, chunk->dirty);
 
 	return 0;
 }

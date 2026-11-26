@@ -516,7 +516,7 @@ static ssize_t e1000_invm_cdev_write(struct cdev *cdev, const void *buf,
 		n++;
 	} while (residue);
 
-	ret = E1000_SUCCESS;
+	ret = count;
 exit:
 	e1000_invm_lock(hw);
 	return ret;

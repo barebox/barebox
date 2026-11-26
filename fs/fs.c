@@ -3697,24 +3697,30 @@ static int automount_mount(struct dentry *dentry)
 	in_automount++;
 
 	list_for_each_entry(am, &automount_list, list) {
+		char *cmd;
+
 		if (am->dentry != dentry)
 			continue;
 
+		/* the command may remove the automount */
+		cmd = xstrdup(am->cmd);
+
 		setenv("automount_path", am->path);
 		export("automount_path");
-		ret = run_command("%s", am->cmd);
+		ret = run_command("%s", cmd);
 		unsetenv("automount_path");
 
 		if (ret) {
 			printf("running automount command '%s' failed\n",
-					am->cmd);
+					cmd);
 			ret = -ENODEV;
 		} else if (!(dentry->d_flags & DCACHE_MOUNTED)) {
 			printf("automount command '%s' didn't mount anything\n",
-					am->cmd);
+					cmd);
 			ret = -ENODEV;
 		}
 
+		free(cmd);
 		break;
 	}
 
